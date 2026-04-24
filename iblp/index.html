@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IBLP - Fun Learning for Kids!</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .hero-icon    { width: 1.5rem;  height: 1.5rem; }
+        .settings-icon{ width: 1.25rem; height: 1.25rem; }
+ 
+        /* ── Logout button ── */
+        .logout-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.4rem 0.9rem;
+            border-radius: 9999px;
+            border: 2px solid #E5E7EB;
+            background: #fff;
+            color: #6B7280;
+            font-weight: 700;
+            font-size: 0.8rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: border-color 0.2s, color 0.2s, background 0.2s;
+        }
+        .logout-btn:hover {
+            border-color: #EF4444;
+            color: #EF4444;
+            background: #FEF2F2;
+        }
+        .logout-btn svg { width: 15px; height: 15px; }
+ 
+        /* ── User greeting chip ── */
+        .user-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 9999px;
+            background: #E0F7F5;
+            color: #00796B;
+            font-weight: 800;
+            font-size: 0.82rem;
+        }
+ 
+        /* ── Topic progress badges ── */
+        .topic-progress-bar {
+            margin-top: 0.6rem;
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        .topic-progress-fill {
+            height: 100%;
+            background: rgba(255,255,255,0.9);
+            border-radius: 9999px;
+            width: 0%;
+            transition: width 0.8s ease;
+        }
+        .topic-status {
+            margin-top: 0.35rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: rgba(255,255,255,0.9);
+        }
+    </style>
+</head>
+<body>
+    <!-- ══ HEADER ══════════════════════════════════════════════════ -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">📚</div>
+                <span class="logo-text">IBLP</span>
+            </div>
+ 
+            <div class="header-actions">
+                <!-- Personalised child name chip -->
+                <div class="user-chip" id="user-chip" style="display:none;">
+                    <span id="user-emoji">🧒</span>
+                    <span id="user-name"></span>
+                </div>
+ 
+                <!-- Stars counter — updated live from DB -->
+                <div class="stars-badge">
+                    <svg class="star-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <span class="stars-count">0</span>
+                </div>
+ 
+                <!-- Language toggle -->
+                <button class="btn btn-outline btn-sm lang-toggle">Sesotho</button>
+ 
+                <!-- Progress page -->
+                <a href="progress.html" class="btn btn-ghost btn-icon" title="My Progress">
+                    <svg class="settings-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="20" x2="18" y2="10"/>
+                        <line x1="12" y1="20" x2="12" y2="4"/>
+                        <line x1="6"  y1="20" x2="6"  y2="14"/>
+                    </svg>
+                </a>
+ 
+                <!-- Logout -->
+                <button class="logout-btn" title="Log out">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    Log out
+                </button>
+            </div>
+        </div>
+    </header>
+ 
+    <!-- ══ HERO ════════════════════════════════════════════════════ -->
+    <section class="container">
+        <div class="hero">
+            <div class="hero-title">
+                <h2 id="hero-greeting" data-en="Hello, Friend! 👋" data-st="Lumela, Motsoalle! 👋">
+                    Hello, Friend! 👋
+                </h2>
+                <button class="btn btn-ghost btn-icon speak-btn"
+                        data-en-text="Welcome to IBLP! Let's learn together!"
+                        data-st-text="Amoheloa ho IBLP! Ha re ithute hammoho!"
+                        data-text="Welcome to IBLP! Let's learn together!">
+                    <svg class="hero-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 10h4l5-5v14l-5-5H3V10z"/>
+                        <path d="M16 8c.75.75 1.5 1.5 1.5 3s-.75 2.25-1.5 3"/>
+                    </svg>
+                </button>
+            </div>
+            <p class="hero-description"
+               data-en="Let's learn colors, numbers, and animals together!"
+               data-st="Ha re ithute mebala, linomoro le liphoofolo hammoho!">
+                Let's learn colors, numbers, and animals together!
+            </p>
+        </div>
+ 
+        <!-- ══ TOPIC CARDS with live progress bars ══ -->
+        <div class="topics-grid">
+ 
+            <a href="learn-colors.html" class="topic-card colors">
+                <div class="topic-icon">🎨</div>
+                <h3 class="topic-title" data-en="Colors" data-st="Mebala">Colors</h3>
+                <p class="topic-description"
+                   data-en="Learn your colors!" data-st="Ithute mebala ea hau!">
+                    Learn your colors!
+                </p>
+                <div class="topic-progress-bar">
+                    <div class="topic-progress-fill" id="bar-colors"></div>
+                </div>
+                <div class="topic-status" id="status-colors" data-en="⭐ Start Learning!" data-st="⭐ Qala ho Ithuta!">⭐ Start Learning!</div>
+            </a>
+ 
+            <a href="learn-numbers.html" class="topic-card numbers">
+                <div class="topic-icon">🔢</div>
+                <h3 class="topic-title" data-en="Numbers" data-st="Linomoro">Numbers</h3>
+                <p class="topic-description"
+                   data-en="Count with us!" data-st="Bala le rona!">
+                    Count with us!
+                </p>
+                <div class="topic-progress-bar">
+                    <div class="topic-progress-fill" id="bar-numbers"></div>
+                </div>
+                <div class="topic-status" id="status-numbers" data-en="⭐ Start Learning!" data-st="⭐ Qala ho Ithuta!">⭐ Start Learning!</div>
+            </a>
+ 
+            <a href="learn-animals.html" class="topic-card animals">
+                <div class="topic-icon">🦁</div>
+                <h3 class="topic-title" data-en="Animals" data-st="Liphoofolo">Animals</h3>
+                <p class="topic-description"
+                   data-en="Meet the animals!" data-st="Kopana le liphoofolo!">
+                    Meet the animals!
+                </p>
+                <div class="topic-progress-bar">
+                    <div class="topic-progress-fill" id="bar-animals"></div>
+                </div>
+                <div class="topic-status" id="status-animals" data-en="⭐ Start Learning!" data-st="⭐ Qala ho Ithuta!">⭐ Start Learning!</div>
+            </a>
+ 
+        </div>
+ 
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <h3 data-en="Quick Actions" data-st="Ketso Tsa Potlako">Quick Actions</h3>
+            <div class="action-buttons">
+                <a href="quiz.html"     class="btn btn-primary btn-lg"
+                   data-en="🎯 Take a Quiz"   data-st="🎯 Nka Tlhahlobo">🎯 Take a Quiz</a>
+                <a href="progress.html" class="btn btn-outline btn-lg"
+                   data-en="📊 My Progress"   data-st="📊 Tsoelo-pele ea Ka">📊 My Progress</a>
+            </div>
+        </div>
+    </section>
+ 
+    <div class="decor-blob"></div>
+    <div class="decor-circle"></div>
+    <div class="decor-circle-right"></div>
+ 
+    <!-- ══ SCRIPTS ══════════════════════════════════════════════════ -->
+    <!-- auth.js runs first: checks session, wires logout button -->
+    <script src="js/auth.js"></script>
+    <!-- app.js loads progress + preferences from DB -->
+    <script src="js/app.js"></script>
+    <script>
+        /* ── Central function: apply a language to all labelled elements ── */
+        function applyLanguage(language) {
+            document.querySelectorAll('[data-en]').forEach(el => {
+                el.textContent = el.getAttribute('data-' + language);
+            });
+            document.querySelectorAll('[data-en-text]').forEach(el => {
+                el.setAttribute('data-text', el.getAttribute('data-' + language + '-text'));
+            });
+            document.querySelectorAll('[id^="status-"]').forEach(el => {
+                if (el.hasAttribute('data-en')) {
+                    el.textContent = el.getAttribute('data-' + language);
+                }
+            });
+        }
+
+        /* ── Listen for language changes dispatched by app.js ── */
+        window.addEventListener('languageChanged', ({ detail: { language } }) => {
+            applyLanguage(language);
+        });
+
+        /* ── Personalized greeting + progress bars from DB ── */
+        document.addEventListener('DOMContentLoaded', () => {
+            /* Show child name chip */
+            const childName = sessionStorage.getItem('selected_child_name');
+            if (childName) {
+                const chip = document.getElementById('user-chip');
+                document.getElementById('user-name').textContent = childName;
+                chip.style.display = 'inline-flex';
+
+                const greet = document.getElementById('hero-greeting');
+                greet.setAttribute('data-en', `Hello, ${childName}! 👋`);
+                greet.setAttribute('data-st', `Lumela, ${childName}! 👋`);
+                greet.textContent = `Hello, ${childName}! 👋`;
+            }
+
+            /*
+             * Poll until app.js has finished loading both progress AND
+             * preferences from the backend, then apply the saved language
+             * and fill in the progress bars.
+             */
+            function applyWhenReady() {
+                if (typeof progress === 'undefined' || typeof currentLanguage === 'undefined') {
+                    setTimeout(applyWhenReady, 300);
+                    return;
+                }
+
+                /* Apply the language that was saved in the DB */
+                applyLanguage(currentLanguage);
+
+                /* Progress bars */
+                const lang = currentLanguage;
+                if (progress.colors_completed) {
+                    document.getElementById('bar-colors').style.width = '100%';
+                    document.getElementById('status-colors').textContent =
+                        lang === 'st' ? '✅ Phethiloe!' : '✅ Completed!';
+                } else if (progress.colors_attempts > 0) {
+                    document.getElementById('bar-colors').style.width = '50%';
+                    document.getElementById('status-colors').textContent =
+                        lang === 'st' ? '🔄 Ho tsoela pele' : '🔄 In Progress';
+                }
+
+                if (progress.numbers_completed) {
+                    document.getElementById('bar-numbers').style.width = '100%';
+                    document.getElementById('status-numbers').textContent =
+                        lang === 'st' ? '✅ Phethiloe!' : '✅ Completed!';
+                } else if (progress.numbers_attempts > 0) {
+                    document.getElementById('bar-numbers').style.width = '50%';
+                    document.getElementById('status-numbers').textContent =
+                        lang === 'st' ? '🔄 Ho tsoela pele' : '🔄 In Progress';
+                }
+
+                if (progress.animals_completed) {
+                    document.getElementById('bar-animals').style.width = '100%';
+                    document.getElementById('status-animals').textContent =
+                        lang === 'st' ? '✅ Phethiloe!' : '✅ Completed!';
+                } else if (progress.animals_attempts > 0) {
+                    document.getElementById('bar-animals').style.width = '50%';
+                    document.getElementById('status-animals').textContent =
+                        lang === 'st' ? '🔄 Ho tsoela pele' : '🔄 In Progress';
+                }
+            }
+
+            applyWhenReady();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!-- learn-animals.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn Animals - IBLP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .icon { width: 1.25rem; height: 1.25rem; }
+        .back-icon, .home-icon { width: 1.25rem; height: 1.25rem; }
+        .nav-icon { width: 1.25rem; height: 1.25rem; }
+    </style>
+</head>
+<body class="bg-animals">
+    <header class="header">
+        <div class="header-content">
+            <div class="logo" style="gap: 0.5rem;">
+                <a href="index.html" class="btn btn-ghost btn-icon-sm">
+                    <svg class="back-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                </a>
+                <span class="topic-icon" style="font-size: 2rem;">🦁</span>
+                <h1 class="logo-text" style="font-size: 1.5rem;" data-en="Animals" data-st="Liphoofolo">Animals</h1>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-outline btn-sm lang-toggle" data-en="Sesotho" data-st="English">Sesotho</button>
+                <a href="index.html" class="btn btn-ghost btn-icon-sm">
+                    <svg class="home-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 10l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V10z"/>
+                        <path d="M9 22V12h6v10"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="progress-bar-container">
+            <div class="progress-label">
+                <span><span data-en="Progress:" data-st="Tsoelo-pele:">Progress:</span> <span id="current-item">1</span> / <span id="total-items">10</span></span>
+                <span id="progress-percent">10%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill" style="width: 10%"></div>
+            </div>
+        </div>
+
+        <div class="card" style="max-width: 42rem; margin: 0 auto;">
+            <div class="learning-item" id="learning-item">
+                <div class="item-display" id="item-display" style="background-color: #f97316;">
+                    <span class="item-emoji" id="item-emoji">🦁</span>
+                </div>
+                <h2 class="item-name" id="item-name">Lion</h2>
+                <p class="item-name-secondary" id="item-name-secondary">Tau</p>
+                <button class="btn btn-primary btn-lg speak-btn" 
+                        data-text="Lion" 
+                        data-audio="lion" 
+                        id="listen-btn">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 10h4l5-5v14l-5-5H3V10z"/>
+                        <path d="M16 8c.75.75 1.5 1.5 1.5 3s-.75 2.25-1.5 3"/>
+                    </svg>
+                    <span data-en="Listen" data-st="Mamela">Listen</span>
+                </button>
+            </div>
+
+            <div style="background: #f9fafb; margin-top: 2rem; padding: 1rem; border-radius: 0 0 var(--radius-lg) var(--radius-lg); display: flex; align-items: center; justify-content: space-between;">
+                <button class="btn btn-outline" id="prev-btn" disabled>
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.25rem;">
+                        <path d="M15 18l-6-6 6-6"/>
+                    </svg>
+                    <span data-en="Previous" data-st="E fetileng">Previous</span>
+                </button>
+                <div class="nav-dots" id="nav-dots"></div>
+                <button class="btn btn-primary" id="next-btn">
+                    <span id="next-btn-label" data-en="Next" data-st="E latelang">Next</span>
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 0.25rem;">
+                        <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div style="max-width: 42rem; margin: 2rem auto 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem;">
+            <button class="btn btn-outline btn-lg" id="watch-video-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
+                    <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+                <span data-en="Watch Video" data-st="Sheba Video">Watch Video</span>
+            </button>
+            <a href="speech-practice-animals.html" class="btn btn-primary btn-lg">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
+                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    <line x1="12" y1="19" x2="12" y2="22"/>
+                </svg>
+                <span data-en="Practice Speaking" data-st="Koetlise Puo">Practice Speaking</span>
+            </a>
+            <a href="quiz-animals.html" class="btn btn-outline btn-lg">
+                <span data-en="🎯 Take Quiz" data-st="🎯 Nka Tlhahlobo">🎯 Take Quiz</span>
+            </a>
+        </div>
+    </div>
+
+    <div id="video-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center;">
+        <div style="background: white; max-width: 48rem; width: 90%; border-radius: var(--radius-lg); overflow: hidden;">
+            <div style="aspect-ratio: 16/9;">
+                <iframe width="100%" height="100%" src="https://www.youtube.com/embed/zXEq-QO3xTg" title="Learn Animals" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+            <div style="padding: 1rem; text-align: center;">
+                <button class="btn btn-outline" id="close-video-btn" data-en="Back to Learning" data-st="Khutlela Ho Ithuta">Back to Learning</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="decor-blob"></div>
+
+    <script src="js/app.js"></script>
+
+    <script>
+        const animalsData = [
+            { id: "lion",     name: "Lion",     nameSesotho: "Tau",     emoji: "🦁" },
+            { id: "elephant", name: "Elephant", nameSesotho: "Tlou",    emoji: "🐘" },
+            { id: "snake",      name: "Snake",      nameSesotho: "Noha",    emoji: "🐍"},
+            { id: "fox",      name: "Fox",      nameSesotho: "Phokojoe",   emoji: "🦊" },
+            { id: "bird",     name: "Bird",     nameSesotho: "Nonyana", emoji: "🐦" },
+            { id: "cat",      name: "Cat",      nameSesotho: "Katse",   emoji: "😺" },
+            { id: "dog",    name: "Dog",    nameSesotho: "Ntja",    emoji: "🐕" },
+            { id: "sheep",    name: "Sheep",    nameSesotho: "Nku",     emoji: "🐑" },
+            { id: "cow",  name: "Cow",  nameSesotho: "Khomo",   emoji: "🐮"},
+            { id: "chicken",     name: "Chicken",     nameSesotho: "Khoho",   emoji: "🐔" }
+        ];
+
+        let currentIndex = 0;
+        let language = currentLanguage || 'en';
+
+        const t = {
+            next:     { en: 'Next',     st: 'E latelang' },
+            complete: { en: 'Complete!', st: 'Ho Phethiloe!' },
+        };
+
+        function applyLanguage(lang) {
+            document.querySelectorAll('[data-en]').forEach(el => {
+                el.textContent = el.getAttribute('data-' + lang);
+            });
+        }
+
+        function updateDisplay() {
+            const item = animalsData[currentIndex];
+            document.getElementById('item-emoji').textContent = item.emoji;
+            document.getElementById('item-display').style.backgroundColor = item.color;
+            document.getElementById('item-name').textContent = language === 'en' ? item.name : item.nameSesotho;
+            document.getElementById('item-name-secondary').textContent = language === 'en' ? item.nameSesotho : item.name;
+            
+            // Update both data attributes on the speak button
+            const listenBtn = document.getElementById('listen-btn');
+            listenBtn.setAttribute('data-text', language === 'en' ? item.name : item.nameSesotho);
+            listenBtn.setAttribute('data-audio', item.id);
+            
+            document.getElementById('current-item').textContent = currentIndex + 1;
+            document.getElementById('total-items').textContent = animalsData.length;
+            const percent = Math.round(((currentIndex + 1) / animalsData.length) * 100);
+            document.getElementById('progress-percent').textContent = percent + '%';
+            document.getElementById('progress-fill').style.width = percent + '%';
+
+            updateDots();
+            document.getElementById('prev-btn').disabled = currentIndex === 0;
+
+            const nextLabel = document.getElementById('next-btn-label');
+            if (currentIndex === animalsData.length - 1) {
+                nextLabel.textContent = t.complete[language];
+            } else {
+                nextLabel.textContent = t.next[language];
+            }
+
+            applyLanguage(language);
+        }
+
+        function updateDots() {
+            const dotsContainer = document.getElementById('nav-dots');
+            dotsContainer.innerHTML = '';
+            animalsData.forEach((_, index) => {
+                const dot = document.createElement('button');
+                dot.className = `dot ${index === currentIndex ? 'active' : ''} ${index < currentIndex ? 'completed' : ''}`;
+                dot.onclick = () => { currentIndex = index; updateDisplay(); };
+                dotsContainer.appendChild(dot);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Wait for app.js to initialize currentLanguage
+            setTimeout(() => {
+                if (typeof currentLanguage !== 'undefined') {
+                    language = currentLanguage;
+                }
+                updateDisplay();
+            }, 0);
+            
+            document.getElementById('prev-btn').addEventListener('click', () => {
+                if (currentIndex > 0) { currentIndex--; updateDisplay(); }
+            });
+            
+            document.getElementById('next-btn').addEventListener('click', () => {
+                if (currentIndex < animalsData.length - 1) {
+                    currentIndex++;
+                    updateDisplay();
+                } else {
+                    if (typeof addStars !== 'undefined') addStars(5);
+                    if (typeof completeTopic !== 'undefined') completeTopic('animals');
+                    window.location.href = 'index.html';
+                }
+            });
+            
+            document.getElementById('watch-video-btn').addEventListener('click', () => {
+                document.getElementById('video-modal').style.display = 'flex';
+            });
+            
+            document.getElementById('close-video-btn').addEventListener('click', () => {
+                document.getElementById('video-modal').style.display = 'none';
+            });
+            
+            document.querySelector('.lang-toggle').addEventListener('click', () => {
+                language = language === 'en' ? 'st' : 'en';
+                updateDisplay();
+            });
+            
+            // Make sure speak button works with app.js
+            const speakBtn = document.getElementById('listen-btn');
+            if (speakBtn && typeof handleSpeak !== 'undefined') {
+                speakBtn.removeEventListener('click', handleSpeak);
+                speakBtn.addEventListener('click', handleSpeak);
+            }
+        });
+    </script>
+    <script src="js/auth.js"></script>
+</body>
+</html>

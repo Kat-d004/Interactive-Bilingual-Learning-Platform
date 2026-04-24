@@ -1,0 +1,373 @@
+<!-- speech-practice-animals.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Practice Animals - IBLP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-animals">
+    <header class="header">
+        <div class="header-content">
+            <div class="logo" style="gap: 0.5rem;">
+                <a href="learn-animals.html" class="btn btn-ghost btn-icon-sm">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                </a>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    <line x1="12" y1="19" x2="12" y2="22"/>
+                </svg>
+                <h1 class="logo-text" style="font-size: 1.5rem;" data-en="Practice Animals" data-st="Ithute Liphoofolo">Practice Animals</h1>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <button class="btn btn-outline btn-sm lang-toggle" data-en="Sesotho" data-st="English">Sesotho</button>
+                <a href="index.html" class="btn btn-ghost btn-icon-sm">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 10l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V10z"/>
+                        <path d="M9 22V12h6v10"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="progress-bar-container" style="text-align: center;">
+            <p style="color: white; font-weight: 600; margin-bottom: 0.5rem;">
+                <span data-en="Correct:" data-st="U nepile!:">Correct:</span> <span id="correct-count">0</span> / 10
+            </p>
+        </div>
+        <div class="card" style="max-width: 42rem; margin: 0 auto;" id="practice-card"></div>
+        <div style="max-width: 42rem; margin: 2rem auto 0; text-align: center;">
+            <a href="learn-animals.html" class="btn btn-outline btn-lg">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                <span data-en="Back to Learning" data-st="Khutlela Ho Ithuta">Back to Learning</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="decor-blob"></div>
+    
+      <div id="audio-unlock-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #3b82f6; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-family: 'Fredoka', sans-serif;">
+      <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">Ready?</h1>
+      <button id="start-practice-btn" class="btn btn-lg" style="background: white; color: #3b82f6; border: none; padding: 1rem 3rem; font-size: 1.5rem; border-radius: 1rem; cursor: pointer; font-weight: bold;">
+          Start / Qala
+      </button>
+  </div>
+
+    <script src="js/mic-recorder-animals.js"></script>
+    <script src="js/app.js"></script>
+    
+    <script>
+        const animalsData = [
+            { id: "lion",     name: "Lion",     nameSesotho: "Tau",      emoji: "🦁" },
+            { id: "elephant", name: "Elephant", nameSesotho: "Tlou",     emoji: "🐘" },
+            { id: "snake",    name: "Snake",    nameSesotho: "Noha",     emoji: "🐍" },
+            { id: "fox",      name: "Fox",      nameSesotho: "Phokojoe", emoji: "🦊" },
+            { id: "bird",     name: "Bird",     nameSesotho: "Nonyana",  emoji: "🐦" },
+            { id: "cat",      name: "Cat",      nameSesotho: "Katse",    emoji: "😺" },
+            { id: "dog",      name: "Dog",      nameSesotho: "Ntja",     emoji: "🐕" },
+            { id: "sheep",    name: "Sheep",    nameSesotho: "Nku",      emoji: "🐑" },
+            { id: "cow",      name: "Cow",      nameSesotho: "Khomo",    emoji: "🐮" },
+            { id: "chicken",  name: "Chicken",  nameSesotho: "Khoho",    emoji: "🐔" },
+        ].sort(() => Math.random() - 0.5);
+
+        // Helper: render animal image with emoji fallback
+        function animalImg(item) {
+            return `<img
+                src="images/animals/${item.id}.jpg"
+                alt="${item.name}"
+                onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+                style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-lg);"
+            ><span style="display:none;font-size:4rem;width:100%;height:100%;align-items:center;justify-content:center;">${item.emoji}</span>`;
+        }
+
+        let currentIndex = 0;
+        let correctCount = 0;
+        let language = 'en';
+        let isListening = false;
+        let feedback = null;
+        let transcript = '';
+
+        const T = {
+            sayLoud:    { en: 'Say this animal out loud!',    st: 'Bolela phoofolo ena ka ho hlakisa!' },
+            listenFirst:{ en: 'Listen First',                 st: 'Mamela Pele' },
+            listening:  { en: 'Listening...',                 st: 'Ke mametse...' },
+            tapMic:     { en: 'Tap the microphone and speak', st: "Tobetsa microphone 'me u bue" },
+            youSaid:    { en: 'You said:',                    st: 'U buile:' },
+            correct:    { en: 'Correct! +1 Star',             st: 'U nepile! +1 Naleli' },
+            tryAgain:   { en: 'Try Again!',                   st: 'Leka Hape!' },
+            nextWord:   { en: 'Next Animal',                  st: 'Phoofolo e Latelang' },
+            allDone:    { en: 'All Done!',                    st: 'Ho Phethiloe!' },
+            tryAgainBtn:{ en: 'Try Again',                    st: 'Leka Hape' },
+            hearIt:     { en: 'Hear It',                      st: 'E Utloa' },
+            cantRecog:  { en: 'Could not recognise — try again', st: 'Ha ea utloa — leka hape' },
+        };
+
+        function t(key) { return T[key][language]; }
+
+        function applyLanguage(lang) {
+            document.querySelectorAll('[data-en]').forEach(el => {
+                el.textContent = el.getAttribute('data-' + lang);
+            });
+        }
+
+        // Function to attach speak listeners using app.js handleSpeak
+        function attachSpeakListenersToPage() {
+            if (typeof window.handleSpeak === 'function') {
+                const speakBtns = document.querySelectorAll('.speak-btn');
+                speakBtns.forEach(btn => {
+                    btn.removeEventListener('click', window.handleSpeak);
+                    btn.addEventListener('click', window.handleSpeak);
+                });
+                return true;
+            }
+            return false;
+        }
+
+        function updatePractice() {
+            const item = animalsData[currentIndex];
+
+        if (!feedback && !transcript && !isListening) {
+            if (language === 'en') {
+                speak("Can you say this animal?");
+            } else {
+                playRecording("puo_ea_liphoofolo");
+            }
+        }
+
+            let html = `
+                <div style="padding: 1.5rem; text-align: center;">
+                    <div style="width: 10rem; height: 10rem; margin: 0 auto 1rem; border-radius: var(--radius-lg); background: #f3f4f6; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-xl);">
+                        ${animalImg(item)}
+                    </div>
+              
+                    <p style="color: var(--color-muted-foreground); margin-bottom: 1rem;">${t('sayLoud')}</p>
+                    <button class="btn btn-outline btn-lg speak-btn" data-text="${language === 'en' ? item.name : item.nameSesotho}" data-audio="${item.id}" style="margin-bottom: 2rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
+                            <path d="M3 10h4l5-5v14l-5-5H3V10z"/>
+                            <path d="M16 8c.75.75 1.5 1.5 1.5 3s-.75 2.25-1.5 3"/>
+                        </svg>
+                        ${t('listenFirst')}
+                    </button>
+                    <div style="position: relative;">
+                        <button class="mic-button ${feedback === 'correct' ? 'correct' : feedback === 'incorrect' ? 'incorrect' : 'default'} ${isListening ? 'listening' : ''}" id="mic-btn">
+                            <svg class="mic-icon ${isListening ? 'bounce' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                <line x1="12" y1="19" x2="12" y2="22"/>
+                            </svg>
+                        </button>
+                        ${isListening ? '<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 9rem; height: 9rem; border: 4px solid #ef4444; border-radius: 50%; animation: pulse 1.5s infinite; opacity: 0.5;"></div>' : ''}
+                    </div>
+                    <p style="margin-top: 1rem; color: var(--color-muted-foreground);">
+                        ${isListening ? t('listening') : t('tapMic')}
+                    </p>
+            `;
+
+            if (transcript) {
+                html += `
+                    <div style="margin-top: 1rem; padding: 1rem; background: #f3f4f6; border-radius: 0.75rem;">
+                        <p style="font-size: 0.875rem; color: var(--color-muted-foreground); margin-bottom: 0.25rem;">${t('youSaid')}</p>
+                        <p style="font-size: 1.25rem; font-weight: 600;">${transcript}</p>
+                    </div>
+                `;
+            }
+
+            if (feedback) {
+                html += `
+                    <div class="feedback ${feedback}" style="margin-top: 1.5rem;">
+                        <div class="feedback-header">
+                            <svg class="feedback-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                ${feedback === 'correct' ? '<path d="M20 6L9 17l-5-5"/>' : '<path d="M12 8v8M12 16h.01"/>'}
+                            </svg>
+                            <span class="feedback-title">${feedback === 'correct' ? t('correct') : t('tryAgain')}</span>
+                            ${feedback === 'correct' ? '<span style="font-size: 2rem;">🌟</span>' : ''}
+                        </div>
+                        <div class="feedback-actions">
+                            ${feedback === 'correct' ? `
+                                <button class="btn btn-primary" id="next-word-btn" ${currentIndex === animalsData.length - 1 ? 'disabled' : ''}>
+                                    ${currentIndex === animalsData.length - 1 ? t('allDone') : t('nextWord')}
+                                </button>
+                            ` : `
+                                <button class="btn btn-outline" id="try-again-btn">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
+                                        <path d="M1 4v6h6M23 20v-6h-6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                                    </svg>
+                                    ${t('tryAgainBtn')}
+                                </button>
+                                <button class="btn btn-primary speak-btn" data-text="${language === 'en' ? item.name : item.nameSesotho}" data-audio="${item.id}">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
+                                        <path d="M3 10h4l5-5v14l-5-5H3V10z"/>
+                                        <path d="M16 8c.75.75 1.5 1.5 1.5 3s-.75 2.25-1.5 3"/>
+                                    </svg>
+                                    ${t('hearIt')}
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += `</div>`;
+            document.getElementById('practice-card').innerHTML = html;
+            document.getElementById('correct-count').textContent = correctCount;
+            applyLanguage(language);
+
+            // Attach microphone listener
+            const micBtn = document.getElementById('mic-btn');
+            if (micBtn) {
+                micBtn.removeEventListener('click', startListening);
+                micBtn.addEventListener('click', startListening);
+            }
+
+            // Attach speak button listeners to use app.js handleSpeak
+            attachSpeakListenersToPage();
+
+            const nextBtn = document.getElementById('next-word-btn');
+            if (nextBtn) {
+                nextBtn.removeEventListener('click', handleNext);
+                nextBtn.addEventListener('click', handleNext);
+            }
+
+            const tryBtn = document.getElementById('try-again-btn');
+            if (tryBtn) {
+                tryBtn.removeEventListener('click', handleTryAgain);
+                tryBtn.addEventListener('click', handleTryAgain);
+            }
+        }
+
+        function handleNext() {
+            if (currentIndex < animalsData.length - 1) {
+                currentIndex++;
+                feedback = null;
+                transcript = '';
+                updatePractice();
+            }
+        }
+
+        function handleTryAgain() {
+            feedback = null;
+            transcript = '';
+            updatePractice();
+        }
+
+function startListening() {
+    if (isListening) return;
+    isListening = true;
+    feedback = null;
+    transcript = '';
+    updatePractice();
+
+    if (typeof IBLPMic !== 'undefined' && IBLPMic.record) {
+        IBLPMic.record()
+            .then(data => {
+                isListening = false;
+                if (data.error || !data.recognized) {
+                    feedback = 'incorrect';
+                    language === 'en' ? speak("How about you try again") : playRecording("u_fositse");
+                } else {
+                    const expected = animalsData[currentIndex].id;
+                    const recognizedId = data.id;
+
+                    transcript = `${data.sesotho} (${data.english}) — ${data.confidence}%`;
+                    feedback = recognizedId === expected ? 'correct' : 'incorrect';
+                    
+                            if (feedback === 'correct') {
+                                correctCount++;
+                                if (typeof addStars !== 'undefined') addStars(1);
+                                
+                                // Correct Feedback Audio ---
+                                if (language === 'en') {
+                                    speak("Fantastic, that is correct");
+                                } else {
+                                    playRecording("u_nepile");
+                                }
+                            } else {
+                                // Incorrect Feedback Audio ---
+                                if (language === 'en') {
+                                    speak("How about you try again");
+                                } else {
+                                    playRecording("u_fositse");
+                                }
+                            }
+                }
+                updatePractice();
+            })
+            .catch(err => {
+                isListening = false;
+                feedback = 'incorrect';
+                language === 'en' ? speak("How about you try again") : playRecording("u_fositse");
+                updatePractice();
+            });
+    }
+}
+
+        function syncLanguage() {
+            if (typeof currentLanguage !== 'undefined') {
+                language = currentLanguage;
+                applyLanguage(language);
+                updatePractice();
+            }
+        }
+
+        // Listen for language changes from app.js
+        window.addEventListener('languageChanged', (e) => {
+            if (e.detail && e.detail.language) {
+                language = e.detail.language;
+                applyLanguage(language);
+                updatePractice();
+            }
+        });
+
+        // Wait for app.js to fully load before initializing
+        function initAudioSession() {
+        const overlay = document.getElementById('audio-unlock-overlay');
+        const startBtn = document.getElementById('start-practice-btn');
+
+        if (!startBtn) return;
+
+        startBtn.addEventListener('click', () => {
+            // 1. Hide the overlay
+            overlay.style.display = 'none';
+            
+            // 2. Sync the current language from app.js
+            if (typeof currentLanguage !== 'undefined') {
+                language = currentLanguage;
+            }
+
+            // 3. Trigger the "on-load" audio manually for the first time
+            if (language === 'en') {
+                speak("Can you say this animal?");
+            } else {
+                playRecording("puo_ea_liphoofolo");
+            }
+            
+            // 4. Start the practice UI
+            updatePractice();
+        });
+    }
+
+    // Optimized loader: replaces your old waitForApp
+    document.addEventListener('DOMContentLoaded', () => {
+        const checkApp = setInterval(() => {
+            // Check if app.js functions are ready
+            if (typeof window.handleSpeak === 'function' && typeof currentLanguage !== 'undefined') {
+                clearInterval(checkApp);
+                console.log('✅ Systems ready, waiting for user to press Start');
+                initAudioSession();
+            }
+        }, 100);
+    });
+    </script>
+</body>
+</html>

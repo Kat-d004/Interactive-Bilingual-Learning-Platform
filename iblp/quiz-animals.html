@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animals Quiz - IBLP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-animals">
+    <header class="header">
+        <div class="header-content">
+            <div class="logo" style="gap: 0.5rem;">
+                <a href="quiz.html" class="btn btn-ghost btn-icon-sm">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                </a>
+                <span style="font-size: 2rem;">🦁</span>
+                <h1 style="font-size: 1.5rem; font-weight: 700; font-family: var(--font-display);" data-en="Animals Quiz" data-st="Thakanyo ea Liphoofolo">Animals Quiz</h1>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <div class="stars-badge">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <span class="stars-count" id="quiz-stars">0</span>
+                </div>
+                <button class="btn btn-outline btn-sm lang-toggle" data-en="Sesotho" data-st="English">Sesotho</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="progress-bar-container">
+            <div class="progress-label">
+                <span><span data-en="Question" data-st="Potso">Question</span> <span id="current-question">1</span> / <span id="total-questions">5</span></span>
+                <span><span data-en="Score:" data-st="Lintlha:">Score:</span> <span id="current-score">0</span></span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="quiz-progress" style="width: 20%"></div>
+            </div>
+        </div>
+
+        <div class="card" style="max-width: 42rem; margin: 0 auto;" id="quiz-card"></div>
+    </div>
+
+    <div class="decor-blob"></div>
+
+    <div id="audio-unlock-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(34,197,94,0.95);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;">
+        <h2 style="font-family:'Fredoka',sans-serif;margin-bottom:2rem;" data-en="Ready to Play?" data-st="U Lokelitse ho Bapala?">Ready to Play?</h2>
+        <button id="start-quiz-btn" class="btn btn-lg" style="background:white;color:#22c55e;font-size:1.5rem;padding:1rem 3rem;">
+            Start / Qala
+        </button>
+    </div>
+
+    <script>
+        const animalsData = [
+            { id: "lion",     name: "Lion",     nameSesotho: "Tau",     emoji: "🦁" },
+            { id: "elephant", name: "Elephant", nameSesotho: "Tlou",    emoji: "🐘" },
+            { id: "snake",    name: "Snake",    nameSesotho: "Noha",    emoji: "🐍"},
+            { id: "fox",      name: "Fox",      nameSesotho: "Phokojoe", emoji: "🦊" },
+            { id: "bird",     name: "bird",     nameSesotho: "Nonyana", emoji: "🐦" },
+            { id: "cat",      name: "Cat",      nameSesotho: "Katse",   emoji: "😺" },
+            { id: "dog",      name: "Dog",      nameSesotho: "Ntja",    emoji: "🐕" },
+            { id: "sheep",    name: "Sheep",    nameSesotho: "Nku",     emoji: "🐑" },
+            { id: "cow",      name: "Cow",      nameSesotho: "Khomo",   emoji: "🐮"},
+            { id: "chicken",  name: "Chicken",  nameSesotho: "Khoho",   emoji: "🐔" },
+        ];
+
+        // Helper: render animal image with emoji fallback
+        function animalImg(item, size = '6rem') {
+            return `<img
+                src="images/animals/${item.id}.jpg"
+                alt="${item.name}"
+                onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+                style="width:100%;height:100%;object-fit:cover;border-radius:1.5rem;"
+            ><span style="display:none;font-size:3rem;align-items:center;justify-content:center;">${item.emoji}</span>`;
+        }
+
+        function shuffleArray(array) { return [...array].sort(() => Math.random() - 0.5); }
+
+        function generateQuestions() {
+            return shuffleArray(animalsData).slice(0, 5).map(item => {
+                const wrong = shuffleArray(animalsData.filter(i => i.id !== item.id)).slice(0, 3);
+                const options = shuffleArray([item, ...wrong]);
+                return { item, options, correctIndex: options.findIndex(o => o.id === item.id) };
+            });
+        }
+
+        let questions = generateQuestions();
+        let currentQuestion = 0;
+        let score = 0;
+        let selectedAnswer = null;
+        let isListening = false;
+        let micTranscript = '';
+        let language = 'en';
+
+        // ── i18n ──────────────────────────────────────────────────────────────
+        const T = {
+            whatAnimal:  { en: 'What animal is this?',   st: 'Phoofolo ena ke efe?' },
+            listenPrompt:{ en: 'Listen to the name',     st: 'Mamela lebitso' },
+            listenFirst: { en: 'Listen First',           st: 'Mamela Pele' },
+            hearIt:      { en: 'Hear it',                st: 'E utloa' },
+            correct:     { en: 'Correct! +2 Stars',      st: 'U nepile! +2 Linaleli' },
+            answerIs:    { en: 'The answer is',          st: 'Karabo ke' },
+            nextQ:       { en: 'Next Question',          st: 'Potso e Latelang' },
+            seeResults:  { en: 'See Results',            st: 'Bona Liphetho' },
+            amazing:     { en: 'Amazing!',               st: 'Ho Makatsang!' },
+            goodJob:     { en: 'Good Job!',              st: 'Mosebetsi o Motle!' },
+            keepTrying:  { en: 'Keep Trying!',           st: 'Tsoela Pele!' },
+            correct2:    { en: 'correct',                st: 'e nepahetseng' },
+            stars:       { en: 'Stars',                  st: 'Linaleli' },
+            tryAgain:    { en: 'Try Again',              st: 'Leka Hape' },
+            goHome:      { en: 'Go Home',                st: 'Ea Lapeng' },
+            speakAnswer: { en: '🎤 Speak Answer',        st: '🎤 Araba ka Molomo' },
+            cantRecog:   { en: '❓ Could not recognise — try again', st: '❓ Ha ea utloa — leka hape' },
+            youSaid:     { en: 'You said',               st: 'U itse' },
+            tapMic:      { en: 'Tap the mic and speak',  st: "Tobetsa microphone 'me u bue" },
+            listening:   { en: 'Listening...',           st: 'Ke mamela...' },
+        };
+
+        function t(key) { return T[key][language]; }
+
+        function applyLanguage(lang) {
+            document.querySelectorAll('[data-en]').forEach(el => {
+                el.textContent = el.getAttribute('data-' + lang);
+            });
+        }
+
+        function updateQuiz() {
+            const q = questions[currentQuestion];
+            if (!q) return;
+
+            const micState = selectedAnswer === null ? 'default'
+                           : selectedAnswer === q.correctIndex ? 'correct' : 'incorrect';
+
+            let html = `
+                <div style="padding: 1.5rem;">
+                    <div style="text-align: center; margin-bottom: 1.5rem;">
+                        <div style="width: 12rem; height: 12rem; margin: 0 auto 1rem; border-radius: 1.5rem; background: #f3f4f6; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md);">
+                            ${animalImg(q.item)}
+                        </div>
+                        <p style="color: var(--color-muted-foreground); font-weight: 600;">${t('whatAnimal')}</p>
+                        <button class="btn btn-outline speak-btn" data-text="${q.item.name}" data-text-en="${q.item.name}" data-text-st="${q.item.nameSesotho}" data-audio="${q.item.id}" style="margin-top: 0.75rem; border-radius: 2rem;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.4rem;">
+                                <path d="M3 10h4l5-5v14l-5-5H3V10z"/><path d="M16 8c.75.75 1.5 1.5 1.5 3s-.75 2.25-1.5 3"/>
+                            </svg>
+                            ${t('listenFirst')}
+                        </button>
+                    </div>
+
+                    <div class="quiz-options">
+                        ${q.options.map((opt, idx) => `
+                            <button class="quiz-option" data-index="${idx}" ${selectedAnswer !== null ? 'disabled' : ''} style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem;">
+                                <div style="font-size: 1.25rem; font-weight: 700;">
+                                    ${language === 'en' ? opt.name : opt.nameSesotho}
+                                </div>
+                                ${selectedAnswer !== null && idx === q.correctIndex ? '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" style="margin-top:0.5rem;"><path d="M20 6L9 17l-5-5"/></svg>' : ''}
+                                ${selectedAnswer !== null && idx === selectedAnswer && idx !== q.correctIndex ? '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" style="margin-top:0.5rem;"><path d="M18 6L6 18M6 6l12 12"/></svg>' : ''}
+                            </button>
+                        `).join('')}
+                    </div>
+
+                    ${selectedAnswer === null ? `
+                        <div style="text-align: center; margin-top: 1.5rem;">
+                            <div style="position: relative; display: inline-block;">
+                                <button class="mic-button ${micState} ${isListening ? 'listening' : ''}" id="quiz-mic-btn">
+                                    <svg class="mic-icon ${isListening ? 'bounce' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                        <line x1="12" y1="19" x2="12" y2="22"/>
+                                    </svg>
+                                </button>
+                                ${isListening ? '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:9rem;height:9rem;border:4px solid #ef4444;border-radius:50%;animation:pulse 1.5s infinite;opacity:0.5;pointer-events:none;"></div>' : ''}
+                            </div>
+                            <p style="margin-top: 0.75rem; color: var(--color-muted-foreground); font-size: 0.9rem;">
+                                ${isListening ? t('listening') : t('tapMic')}
+                            </p>
+                        </div>
+                    ` : ''}
+
+                    ${micTranscript ? `
+                        <div style="margin: 1rem 0; padding: 0.75rem 1rem; background: #f3f4f6; border-radius: 0.75rem; text-align: center;">
+                            <p style="font-size: 0.8rem; color: var(--color-muted-foreground); margin-bottom: 0.2rem;">${t('youSaid')}:</p>
+                            <p style="font-size: 1.1rem; font-weight: 600;">${micTranscript}</p>
+                        </div>
+                    ` : ''}
+
+                    ${selectedAnswer !== null ? `
+                        <div class="feedback ${selectedAnswer === q.correctIndex ? 'correct' : 'incorrect'}" style="margin-top: 1rem;">
+                            <div class="feedback-header">
+                                <svg class="feedback-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    ${selectedAnswer === q.correctIndex ? '<path d="M20 6L9 17l-5-5"/>' : '<path d="M12 8v8M12 16h.01"/>'}
+                                </svg>
+                                <span class="feedback-title">
+                                    ${selectedAnswer === q.correctIndex ? t('correct') : t('answerIs') + ' ' + (language === 'en' ? q.item.name : q.item.nameSesotho)}
+                                </span>
+                                ${selectedAnswer === q.correctIndex ? '<span style="font-size:1.5rem;">🌟</span>' : ''}
+                            </div>
+                            ${selectedAnswer !== q.correctIndex ? `
+                                <div class="feedback-actions" style="margin-top:0.75rem;">
+                                    <button class="btn btn-outline speak-btn" data-text="${q.item.name}" data-text-en="${q.item.name}" data-text-st="${q.item.nameSesotho}" data-audio="${q.item.id}">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:0.35rem;">
+                                            <path d="M3 10h4l5-5v14l-5-5H3V10z"/><path d="M16 8c.75.75 1.5 1.5 1.5 3s-.75 2.25-1.5 3"/>
+                                        </svg>
+                                        ${t('hearIt')}
+                                    </button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    ` : ''}
+                </div>
+                <div style="background: #f9fafb; padding: 1rem; text-align: center;">
+                    ${selectedAnswer !== null ? `
+                        <button class="btn btn-primary" id="next-question-btn">
+                            ${currentQuestion < questions.length - 1 ? t('nextQ') : t('seeResults')}
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+
+            document.getElementById('quiz-card').innerHTML = html;
+            document.getElementById('current-question').textContent = currentQuestion + 1;
+            document.getElementById('current-score').textContent = score;
+            document.getElementById('quiz-progress').style.width = `${((currentQuestion + 1) / questions.length) * 100}%`;
+
+            attachQuizListeners();
+        }
+
+        // Mirror the same helper used in speech-practice-animals.html
+        function attachSpeakListenersToPage() {
+            if (typeof window.handleSpeak === 'function') {
+                document.querySelectorAll('.speak-btn').forEach(btn => {
+                    // Keep data-text in sync with current language
+                    const textEn = btn.getAttribute('data-text-en');
+                    const textSt = btn.getAttribute('data-text-st');
+                    if (textEn && textSt) {
+                        btn.setAttribute('data-text', language === 'en' ? textEn : textSt);
+                    }
+                    btn.removeEventListener('click', window.handleSpeak);
+                    btn.addEventListener('click', window.handleSpeak);
+                });
+                return true;
+            }
+            return false;
+        }
+
+        function attachQuizListeners() {
+            const q = questions[currentQuestion];
+
+            // Manual clicks
+            document.querySelectorAll('.quiz-option').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (selectedAnswer === null) handleAnswer(parseInt(btn.dataset.index));
+                });
+            });
+
+            // Microphone setup — large styled button like speech-practice
+            const quizMicBtn = document.getElementById('quiz-mic-btn');
+            if (quizMicBtn && selectedAnswer === null) {
+                quizMicBtn.addEventListener('click', () => {
+                    if (isListening) return;
+                    isListening = true;
+                    micTranscript = '';
+                    updateQuiz();
+
+                    IBLPMic.record()
+                        .then(data => {
+                            isListening = false;
+                            if (data.error || !data.recognized) {
+                                language === 'en' ? speak(t('cantRecog').replace('❓ ', '')) : playRecording('u_fositse');
+                                updateQuiz();
+                                return;
+                            }
+                            // recognised is already a string — use data.id directly
+                            const recognizedId = data.id;
+                            const label = language === 'en' && data.english
+                                ? `${data.sesotho} (${data.english})`
+                                : data.sesotho;
+                            micTranscript = `${label} — ${data.confidence}%`;
+
+                            const matchIdx = q.options.findIndex(opt => opt.id === recognizedId);
+                            if (matchIdx === -1) {
+                                language === 'en' ? speak(t('cantRecog').replace('❓ ', '')) : playRecording('u_fositse');
+                                updateQuiz();
+                                return;
+                            }
+                            const isCorrect = matchIdx === q.correctIndex;
+                            if (isCorrect) {
+                                language === 'en' ? speak('Fantastic, that is correct') : playRecording('u_nepile');
+                            } else {
+                                language === 'en' ? speak('How about you try again') : playRecording('u_fositse');
+                            }
+                            handleAnswer(matchIdx);
+                        })
+                        .catch(() => {
+                            isListening = false;
+                            language === 'en' ? speak('Could not hear you, try again') : playRecording('u_fositse');
+                            updateQuiz();
+                        });
+                });
+            }
+
+            const nextBtn = document.getElementById('next-question-btn');
+            if (nextBtn) nextBtn.addEventListener('click', handleNext);
+
+            // Attach speak listeners — uses app.js handleSpeak (TTS for EN, wav recording for ST)
+            attachSpeakListenersToPage();
+        }
+
+        function handleAnswer(index) {
+            selectedAnswer = index;
+            if (index === questions[currentQuestion].correctIndex) {
+                score++;
+                if (typeof addStars !== 'undefined') addStars(2);
+            }
+            playFeedbackSound(index === questions[currentQuestion].correctIndex);
+            updateQuiz();
+        }
+
+        function handleNext() {
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                selectedAnswer = null;
+                isListening = false;
+                micTranscript = '';
+                updateQuiz();
+            } else {
+                if (typeof addQuizScore !== 'undefined') addQuizScore('animals', score);
+                showResults();
+            }
+        }
+
+        function showResults() {
+            const percentage = Math.round((score / questions.length) * 100);
+            const starsEarned = score * 2;
+            document.getElementById('quiz-card').innerHTML = `
+                <div style="padding: 3rem; text-align: center;">
+                    <div style="width: 6rem; height: 6rem; margin: 0 auto 1.5rem; background: linear-gradient(135deg, #facc15, #f97316); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="white"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    </div>
+                    <h2 style="font-size: 2rem; font-family: var(--font-display); margin-bottom: 1rem;">
+                        ${percentage >= 80 ? t('amazing') : percentage >= 60 ? t('goodJob') : t('keepTrying')}
+                    </h2>
+                    <div style="font-size: 3rem; font-weight: 700; color: var(--color-primary); margin-bottom: 0.5rem;">${score} / ${questions.length}</div>
+                    <p style="color: var(--color-muted-foreground); margin-bottom: 1.5rem;">${percentage}% ${t('correct2')}</p>
+                    <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: #fef3c7; padding: 0.75rem 1.5rem; border-radius: var(--radius-full); margin-bottom: 2rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="#eab308"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <span style="font-weight: 700; color: #b45309;">+${starsEarned} ${t('stars')}</span>
+                    </div>
+                    <div style="display: flex; gap: 1rem; justify-content: center;">
+                        <button class="btn btn-primary" onclick="window.location.href='quiz-animals.html'">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;"><path d="M1 4v6h6M23 20v-6h-6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                            ${t('tryAgain')}
+                        </button>
+                        <a href="index.html" class="btn btn-outline">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;"><path d="M3 10l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V10z"/><path d="M9 22V12h6v10"/></svg>
+                            ${t('goHome')}
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Sync language when app.js toggles it (mirrors speech-practice-animals.html)
+        window.addEventListener('languageChanged', (e) => {
+            if (e.detail && e.detail.language) {
+                language = e.detail.language;
+                applyLanguage(language);
+                updateQuiz();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const checkApp = setInterval(() => {
+                if (typeof window.handleSpeak === 'function' && typeof currentLanguage !== 'undefined') {
+                    clearInterval(checkApp);
+
+                    const overlay = document.getElementById('audio-unlock-overlay');
+                    const startBtn = document.getElementById('start-quiz-btn');
+
+                    // Apply saved language to overlay text before showing
+                    language = currentLanguage;
+                    applyLanguage(language);
+
+                    startBtn.addEventListener('click', () => {
+                        overlay.style.display = 'none';
+                        // Spoken welcome prompt (same style as speech-practice)
+                        language === 'en'
+                            ? speak("What animal is this?")
+                            : playRecording("puo_ea_liphoofolo");
+                        updateQuiz();
+                    });
+                }
+            }, 100);
+        });
+    </script>
+    <script src="js/mic-recorder-animals.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
