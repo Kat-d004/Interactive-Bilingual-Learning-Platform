@@ -7,7 +7,7 @@ header('Access-Control-Allow-Headers: Content-Type');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') { echo json_encode(['error' => 'POST required']); exit; }
 
-define('PYTHON_BIN',    '/home/kopano/ml_env/bin/python3.12');
+define('PYTHON_BIN',    '/opt/iblp/ml_env/bin/python3.12');
 define('PYTHON_SCRIPT', '/var/www/html/iblp/asr_predict_colours.py');
 define('TMP_DIR',       '/var/www/html/iblp/tmp');
 define('MAX_BYTES',     5 * 1024 * 1024);
