@@ -27,7 +27,7 @@ $script  = escapeshellarg(__DIR__ . '/asr_predict_english.py');
 $wav     = escapeshellarg($tmpFile);
 $topicEsc = escapeshellarg($topic);
 
-$output  = shell_exec("/home/kopano/ml_env/bin/python3.12 $script $wav $topicEsc 2>/dev/null");
+$output  = shell_exec("/opt/iblp/ml_env/bin/python3.12 $script $wav $topicEsc 2>/dev/null");
 
 @unlink($tmpFile);
 
