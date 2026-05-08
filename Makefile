@@ -1,10 +1,9 @@
 # ============================================================
-#  IBLP - Makefile
+#  IBLP - Makefile (tested on ubuntu)
 #  Ubuntu + Apache + MySQL  |  Deploy target: /var/www/html/iblp
 #
 #  Place this Makefile in the parent folder of iblp/:
 #
-#    iblp_everything_working/
 #    +-- Makefile
 #    +-- iblp/
 #        +-- *.php, *.py, *.html, api/, config/, models/, ...
