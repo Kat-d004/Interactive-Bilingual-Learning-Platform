@@ -419,11 +419,80 @@ logs-access:
 # -------------------------------------------------------------
 .PHONY: uninstall
 uninstall: _require-root
-	@echo "WARNING: This will remove $(DEPLOY_DIR) and $(VENV_DIR). Press Ctrl-C to cancel ..."
-	@sleep 4
+	@echo ""
+	@echo "===================================================="
+	@echo "  IBLP - Full Uninstall"
+	@echo "  This will remove:"
+	@echo "    - Deployed files   ($(DEPLOY_DIR))"
+	@echo "    - Python venv      (/opt/iblp)"
+	@echo "    - MySQL database   ($(DB_NAME))"
+	@echo "    - MySQL user       ($(DB_APP_USER))"
+	@echo "    - Apache, MySQL, PHP, Python 3.12, ffmpeg"
+	@echo "===================================================="
+	@echo "  Press Ctrl-C within 5 seconds to cancel ..."
+	@sleep 5
+	@echo ""
+
+	@echo "[1/5] Removing deployed files ..."
 	@rm -rf $(DEPLOY_DIR)
+	@echo "      $(DEPLOY_DIR) removed."
+
+	@echo ""
+	@echo "[2/5] Removing Python virtual environment ..."
 	@rm -rf /opt/iblp
-	@echo "Removed $(DEPLOY_DIR) and /opt/iblp."
+	@echo "      /opt/iblp removed."
+
+	@echo ""
+	@echo "[3/5] Removing database and MySQL user ..."
+	@mysql -u root -e \
+		"DROP DATABASE IF EXISTS \`$(DB_NAME)\`;" 2>/dev/null \
+		&& echo "      Database '$(DB_NAME)' dropped." \
+		|| echo "      Could not drop database (may not exist)."
+	@mysql -u root -e \
+		"DROP USER IF EXISTS '$(DB_APP_USER)'@'localhost';" 2>/dev/null \
+		&& echo "      User '$(DB_APP_USER)' dropped." \
+		|| echo "      Could not drop user (may not exist)."
+
+	@echo ""
+	@echo "[4/5] Stopping and disabling services ..."
+	@systemctl stop apache2 mysql 2>/dev/null || true
+	@systemctl disable apache2 mysql 2>/dev/null || true
+	@echo "      Services stopped and disabled."
+
+	@echo ""
+	@echo "[5/5] Removing system packages ..."
+	@DEBIAN_FRONTEND=noninteractive apt-get remove --purge -y \
+		apache2 \
+		apache2-bin \
+		apache2-data \
+		apache2-utils \
+		libapache2-mod-php \
+		mysql-server \
+		mysql-server-8.0 \
+		mysql-client-8.0 \
+		mysql-common \
+		php \
+		php-mysql \
+		php-json \
+		php-mbstring \
+		libapache2-mod-php8.3 \
+		python3.12 \
+		python3.12-venv \
+		python3.12-dev \
+		python3-pip \
+		ffmpeg \
+		libsndfile1 \
+		build-essential \
+		2>&1 | grep -E "^(Removing|Purging)" || true
+	@apt-get autoremove -y 2>&1 | grep -E "^(Removing|Purging)" || true
+	@apt-get autoclean -y -qq
+	@echo "      System packages removed."
+
+	@echo ""
+	@echo "===================================================="
+	@echo "  Uninstall complete."
+	@echo "===================================================="
+	@echo ""
 
 # -------------------------------------------------------------
 #  INTERNAL GUARDS
