@@ -1,9 +1,10 @@
 # ============================================================
-#  IBLP - Makefile (tested on ubuntu)
+#  IBLP - Makefile
 #  Ubuntu + Apache + MySQL  |  Deploy target: /var/www/html/iblp
 #
 #  Place this Makefile in the parent folder of iblp/:
 #
+#    iblp_everything_working/
 #    +-- Makefile
 #    +-- iblp/
 #        +-- *.php, *.py, *.html, api/, config/, models/, ...
@@ -21,11 +22,9 @@ PIP_BIN      := $(VENV_DIR)/bin/pip
 WEB_USER     := www-data
 WEB_GROUP    := www-data
 
-DB_HOST      := localhost
-DB_PORT      := 3306
 DB_NAME      := iblp_database
-DB_USER      := root
-DB_PASS      := foodman
+DB_APP_USER  := iblp_user
+DB_APP_PASS  := iblp_pass
 
 # -- Derived paths (do not edit) -----------------------------
 TMP_DIR      := $(DEPLOY_DIR)/tmp
@@ -37,7 +36,8 @@ CONFIG_DIR   := $(DEPLOY_DIR)/config
 CSS_DIR      := $(DEPLOY_DIR)/css
 JS_DIR       := $(DEPLOY_DIR)/js
 WHISPER_DIR  := $(DEPLOY_DIR)/whisper_cache
-MYSQL        := mysql -h$(DB_HOST) -P$(DB_PORT) -u$(DB_USER) -p$(DB_PASS)
+MYSQL_ROOT   := mysql -u root
+MYSQL_APP    := mysql -u iblp_user -piblp_pass
 
 # -- Progress display helper ---------------------------------
 STEP  = @echo "" && echo "[STEP] $(1)" && echo "----------------------------------------------------"
@@ -201,25 +201,40 @@ _step_pip:
 	@echo "[5/8] Installing Python packages into $(VENV_DIR) ..."
 	@echo "      (librosa, numpy, tensorflow, whisper, soundfile, matplotlib)"
 	@echo "----------------------------------------------------"
-	@$(PIP_BIN) install -q \
+	@$(PIP_BIN) install --timeout 120 --retries 5 \
 		librosa \
 		matplotlib \
 		numpy \
 		tensorflow \
 		openai-whisper \
 		soundfile
-	@echo "      Python packages installed."
+	@echo "      Downloading Whisper base model (~145MB) ..."
+	@$(PYTHON_BIN) -c "import whisper; whisper.load_model('base', download_root='/var/www/html/iblp/whisper_cache')"
+	@echo "      Whisper model ready."
 
 .PHONY: _step_db
 _step_db:
 	@echo ""
 	@echo "[6/8] Setting up database '$(DB_NAME)' ..."
 	@echo "----------------------------------------------------"
-	@$(MYSQL) -e \
+	@echo "      Creating database ..."
+	@$(MYSQL_ROOT) -e \
 		"CREATE DATABASE IF NOT EXISTS \`$(DB_NAME)\` \
-		 CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null
-	@$(MYSQL) $(DB_NAME) < $(SRC_DIR)/config/schema.sql 2>/dev/null
-	@echo "      Database and tables ready."
+		 CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+	@echo "      Creating application user '$(DB_APP_USER)' ..."
+	@$(MYSQL_ROOT) -e \
+		"CREATE USER IF NOT EXISTS '$(DB_APP_USER)'@'localhost' IDENTIFIED BY '$(DB_APP_PASS)';"
+	@$(MYSQL_ROOT) -e \
+		"GRANT ALL PRIVILEGES ON \`$(DB_NAME)\`.* TO '$(DB_APP_USER)'@'localhost';"
+	@$(MYSQL_ROOT) -e "FLUSH PRIVILEGES;"
+	@echo "      Running schema ..."
+	@$(MYSQL_ROOT) $(DB_NAME) < $(SRC_DIR)/config/schema.sql
+	@echo "      Patching db.php credentials ..."
+	@sed -i "s/define('DB_USER', .*)/define('DB_USER', '$(DB_APP_USER)');/" \
+		$(DEPLOY_DIR)/config/db.php
+	@sed -i "s/define('DB_PASS', .*)/define('DB_PASS', '$(DB_APP_PASS)');/" \
+		$(DEPLOY_DIR)/config/db.php
+	@echo "      Database ready. User: $(DB_APP_USER) | DB: $(DB_NAME)"
 
 .PHONY: _step_permissions
 _step_permissions:
@@ -289,7 +304,7 @@ _make-dirs:
 db-reset: _require-root
 	@echo "WARNING: This will DROP and recreate '$(DB_NAME)'. Press Ctrl-C to cancel ..."
 	@sleep 4
-	@$(MYSQL) -e "DROP DATABASE IF EXISTS \`$(DB_NAME)\`;"
+	@$(MYSQL_ROOT) -e "DROP DATABASE IF EXISTS \`$(DB_NAME)\`;"
 	@$(MAKE) --no-print-directory _step_db
 	@echo "Database reset complete."
 
@@ -345,8 +360,8 @@ check:
 
 	@echo ""
 	@echo "-- MySQL -------------------------------------------"
-	@$(MYSQL) -e "SELECT 'MySQL connection OK' AS status;" 2>/dev/null \
-		|| echo "  FAILED: Cannot connect to MySQL - check DB_USER/DB_PASS in Makefile"
+	@$(MYSQL_APP) -e "SELECT 'MySQL connection OK' AS status;" 2>/dev/null \
+		|| echo "  FAILED: Cannot connect to MySQL - check DB_APP_USER/DB_APP_PASS in Makefile"
 
 	@echo ""
 	@echo "-- Deploy directory --------------------------------"
