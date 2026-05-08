@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // ── Config ────────────────────────────────────────────────────────────────────
-define('PYTHON_BIN',    '/home/kopano/ml_env/bin/python3.12');
+define('PYTHON_BIN',    '/opt/iblp/ml_env/bin/python3.12');
 define('PYTHON_SCRIPT', '/var/www/html/iblp/asr_predict.py');
 define('TMP_DIR',       '/var/www/html/iblp/tmp');
 define('MAX_BYTES',     5 * 1024 * 1024);
